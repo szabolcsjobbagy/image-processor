@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>49/49</span>
+                <span class='fraction'>61/61</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>49/49</span>
+                <span class='fraction'>61/61</span>
             </div>
         
             
@@ -112,7 +112,19 @@
 <a name='L47'></a><a href='#L47'>47</a>
 <a name='L48'></a><a href='#L48'>48</a>
 <a name='L49'></a><a href='#L49'>49</a>
-<a name='L50'></a><a href='#L50'>50</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -121,6 +133,8 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
@@ -133,6 +147,8 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">6x</span>
@@ -146,6 +162,10 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -154,6 +174,10 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -167,11 +191,13 @@ import { ProcessingErrorException } from "./errors/processingErrorException"
 import { InvalidImageException } from "./errors/invalidImageException"
 import { SavingIntoFileErrorException } from "./errors/savingIntoFileErrorException"
 import { UnknownError } from "./errors/unknownError"
+import { Logger } from "./logger"
 &nbsp;
 export class ImageProcessor {
 	constructor(
 		private imageProcessingLibrary: ImageProcessingLibrary,
-		private fileStorageLibrary: FileStorageLibrary
+		private fileStorageLibrary: FileStorageLibrary,
+		private logger: Logger
 	) {}
 	public async processAndSaveImage(inputPath: string, outputPath: string): Promise&lt;void&gt; {
 		this.validateImage(inputPath)
@@ -182,7 +208,9 @@ export class ImageProcessor {
 	private validateImage(inputPath: string): void {
 		const isImageValid = inputPath.split(".").pop() === "jpg"
 		if (!isImageValid) {
-			throw new InvalidImageException("Invalid image (only JPG allowed).")
+			const errorMessage = "Invalid image (only JPG allowed)."
+			this.logger.logError(errorMessage)
+			throw new InvalidImageException(errorMessage)
 		}
 	}
 &nbsp;
@@ -191,9 +219,13 @@ export class ImageProcessor {
 			return await this.imageProcessingLibrary.processImage(inputPath)
 		} catch (error) {
 			if (error instanceof ProcessingErrorException) {
-				throw new ProcessingErrorException("Image processing error.")
+				const errorMessage = "Image processing error."
+				this.logger.logError(errorMessage)
+				throw new ProcessingErrorException(errorMessage, error as Error)
 			} else {
-				throw new UnknownError("Unknown error at image processing.")
+				const errorMessage = "Unknown error at image processing."
+				this.logger.logError(errorMessage)
+				throw new UnknownError(errorMessage, error as Error)
 			}
 		}
 	}
@@ -203,9 +235,13 @@ export class ImageProcessor {
 			await this.fileStorageLibrary.saveContentIntoFile(imageContent, outputPath)
 		} catch (error) {
 			if (error instanceof SavingIntoFileErrorException) {
-				throw new SavingIntoFileErrorException("Saving into file error.")
+				const errorMessage = "Saving into file error."
+				this.logger.logError(errorMessage)
+				throw new SavingIntoFileErrorException(errorMessage, error as Error)
 			} else {
-				throw new UnknownError("Unknown error at saving into file.")
+				const errorMessage = "Unknown error at saving into file."
+				this.logger.logError(errorMessage)
+				throw new UnknownError(errorMessage, error as Error)
 			}
 		}
 	}
@@ -217,7 +253,7 @@ export class ImageProcessor {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-12-28T15:42:13.137Z
+                at 2024-01-01T15:15:51.565Z
             </div>
         <script src="../prettify.js"></script>
         <script>
